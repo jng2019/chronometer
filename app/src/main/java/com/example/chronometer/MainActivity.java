@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     // list all the levels of logging and when they're used
     // order them from lowest priority to highest priority
     // verbose Log.v
-    // ....
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
