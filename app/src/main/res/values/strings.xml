@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">chronometer</string>
-    <string name="main_start">Button</string>
-    <string name="main_stop">Button</string>
-    <string name="main_reset">Button</string>
+    <string name="main_start">Start</string>
+    <string name="main_stop">Stop</string>
+    <string name="main_reset">Reset</string>
 </resources>

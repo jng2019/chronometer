@@ -1,5 +1,6 @@
 package com.example.chronometer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -13,11 +14,19 @@ public class MainActivity extends AppCompatActivity {
     private Button startPauseButton;
     private Button resetButton;
     private Chronometer timerChronometer;
+    public static final String KEY_CHRONOMETERS_STOPTIME = "chronometer base";
+    public static final String KEY_CHRONOMETERS_IFRUNNING = "is chronometer running";
+    private long stoppedTime;
+    private boolean clicked;
 
-    // Look up the Log class for Android.
-    // list all the levels of logging and when they're used
-    // order them from lowest priority to highest priority
-    // verbose Log.v
+
+    //launched --> onCreate, onStart, onResume
+    //rotate --> on Pause, onStop, onDestroy, onCreate, onStart, onResume
+    //hit the square button --> onPause, onStop
+    //click back on the app from the square button --> onStop, onStart, onResume
+    //hit the circle button ---> onPause, onStop
+    //relaunch app with navigation bar -->onStop, onStart, onResume
+    //hit the back button -->onPause, onStop, onDestroy
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -27,28 +36,43 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         wirewidgets();
         setListeners();
+        clicked = false;
+        // check to see if saved instance state ins't null,
+        // pull out the value of the base that we saved from the bundle
+        // set the chronometer's base to that value
+        // start the chronometer
+
+        // also store in the bundle
+        // see if it was running ir stopped to decide if you should start or not in onCreate
+
         Log.d(TAG, "onCreate: ");
-    }
-    public void changeBase(){
-        timerChronometer.stop();
     }
     private void wirewidgets() {
         startPauseButton = findViewById(R.id.startandpause);
         resetButton = findViewById(R.id.reset);
         timerChronometer = findViewById(R.id.chronometer_main_time);
     }
-    int countButton = 0;
+
+    // maintain state through orientation change,
+    // when running stay running, no skip time
+    // time stopped, stay stopped and not skip time
+    //no hardcoded strings
+    // changing
     private void setListeners() {
         startPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    if (countButton % 2 == 0) {
+                    if (!clicked) {
+                        timerChronometer.setBase(SystemClock.elapsedRealtime() - stoppedTime);
+                        startPauseButton.setText(getString(R.string.main_stop));
                         timerChronometer.start();
-                        countButton++;
+                        clicked = true;
                     }
                     else{
                         timerChronometer.stop();
-                        changeBase();
+                        startPauseButton.setText(getString(R.string.main_start));
+                        clicked = false;
+                        stoppedTime = (SystemClock.elapsedRealtime() - timerChronometer.getBase());
                     }
             }
 
@@ -57,8 +81,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 timerChronometer.stop();
-
-                countButton++;
+                timerChronometer.setBase(SystemClock.elapsedRealtime());
+                startPauseButton.setText(getString(R.string.main_start));
+                clicked = false;
             }
         });
     }
@@ -88,12 +113,13 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy: ");
     }
-    //launched --> onCreate, onStart, onResume
-    //rotate --> onStop, onDestroy, onCreate, onStart, onResume
-    //hit the square button --> onPause, onStop
-    //click back on the app from the square button --> onStop, onStart, onResume
-    //hit the circle button ---> onPause, onStop
-    //relaunch app with navigation bar -->onStop, onStart, onResume
-    //hit the back button -->onPause, onStop, onDestroy
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putLong(KEY_CHRONOMETERS_STOPTIME, stoppedTime);
+        outState.putBoolean(KEY_CHRONOMETERS_IFRUNNING, clicked);
+    }
+
 }
 
