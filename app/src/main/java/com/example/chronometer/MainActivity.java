@@ -15,10 +15,13 @@ public class MainActivity extends AppCompatActivity {
     private Button resetButton;
     private Chronometer timerChronometer;
     public static final String KEY_CHRONOMETERS_STOPTIME = "chronometer base";
+    public static final String KEY_CHRONOMETERS_CURRENTTIME= "chronometer base";
     public static final String KEY_CHRONOMETERS_IFRUNNING = "is chronometer running";
     private long stoppedTime;
+    private long currentTime;
     private boolean clicked;
 
+    // pass stoppedtime - base if chronometer is paused
 
     //launched --> onCreate, onStart, onResume
     //rotate --> on Pause, onStop, onDestroy, onCreate, onStart, onResume
@@ -37,6 +40,16 @@ public class MainActivity extends AppCompatActivity {
         wirewidgets();
         setListeners();
         clicked = false;
+        if (savedInstanceState != null){
+            stoppedTime = savedInstanceState.getLong(KEY_CHRONOMETERS_STOPTIME);
+            currentTime = savedInstanceState.getLong(KEY_CHRONOMETERS_CURRENTTIME);
+            clicked = savedInstanceState.getBoolean(KEY_CHRONOMETERS_IFRUNNING);
+            if (clicked == true){
+                timerChronometer.setBase(SystemClock.elapsedRealtime() - stoppedTime);
+                timerChronometer.start();
+            }
+        }
+
         // check to see if saved instance state ins't null,
         // pull out the value of the base that we saved from the bundle
         // set the chronometer's base to that value
@@ -73,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                         startPauseButton.setText(getString(R.string.main_start));
                         clicked = false;
                         stoppedTime = (SystemClock.elapsedRealtime() - timerChronometer.getBase());
+                        currentTime = timerChronometer.getBase();
                     }
             }
 
@@ -84,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 timerChronometer.setBase(SystemClock.elapsedRealtime());
                 startPauseButton.setText(getString(R.string.main_start));
                 clicked = false;
+                stoppedTime = (SystemClock.elapsedRealtime() - timerChronometer.getBase());
             }
         });
     }
@@ -117,8 +132,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState){
         super.onSaveInstanceState(outState);
-        outState.putLong(KEY_CHRONOMETERS_STOPTIME, stoppedTime);
+        outState.putLong(KEY_CHRONOMETERS_STOPTIME, SystemClock.elapsedRealtime() - timerChronometer.getBase());
         outState.putBoolean(KEY_CHRONOMETERS_IFRUNNING, clicked);
+        outState.putLong(KEY_CHRONOMETERS_CURRENTTIME, timerChronometer.getBase());
     }
 
 }
